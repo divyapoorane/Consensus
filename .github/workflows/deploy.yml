@@ -31,6 +31,8 @@ jobs:
 
       - name: Build
         working-directory: frontend
+        env:
+          VITE_API_URL: https://consensus-7bjk.onrender.com
         run: npm run build
 
       - name: Setup Pages
