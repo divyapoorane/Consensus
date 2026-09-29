@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #06080F;
+    --bg-canvas: #090D18;
+    --bg-surface: #0D1220;
+    --bg-surface-elevated: #11182B;
+    --bg-secondary: #162038;
+    --border-subtle: #182238;
+    --border-highlight: #28375A;
+    --text-primary: #F0F4FC;
+    --text-muted: #8E9BB5;
+    --accent: #FF5500;
+    --accent-hover: #FF7722;
+    --cyan: #00F0FF;
+    --cyan-dim: #0284C7;
+    --emerald: #00E575;
+    --amber: #F59E0B;
+    --rose: #EF4444;
+  }
+
+  body {
+    background-color: #06080F;
+    color: #F0F4FC;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  * {
+    border-color: #182238;
+  }
+
+  ::selection {
+    background-color: rgba(255, 85, 0, 0.35);
+    color: #FFFFFF;
+  }
+}
+
+.font-display {
+  font-family: 'Syne', sans-serif;
+}
+
+.font-tech {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom restrained scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #1C2744;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #28375A;
+}
+
+/* Orbital Arena Design Primitives */
+.orbital-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+.orbital-dots {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px);
+}
+
+.orbital-glow-orange {
+  box-shadow: 0 0 24px -4px rgba(255, 85, 0, 0.35);
+}
+
+.orbital-glow-cyan {
+  box-shadow: 0 0 24px -4px rgba(0, 240, 255, 0.25);
+}
+
+.orbital-glow-emerald {
+  box-shadow: 0 0 24px -4px rgba(0, 229, 117, 0.25);
+}
+
+.hud-panel {
+  position: relative;
+  background: #0D1220;
+  border: 1px solid #182238;
+  border-radius: 8px;
+}
+
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 85, 0, 0.4), transparent);
+  pointer-events: none;
+}
+
+.hud-panel-cyan::before {
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+}
+
+/* Technical Corner Brackets */
+.corner-brackets {
+  position: relative;
+}
+
+.corner-brackets::before,
+.corner-brackets::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: #28375A;
+  pointer-events: none;
+}
+
+.corner-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid #00F0FF;
+  border-left: 1px solid #00F0FF;
+}
+
+.corner-brackets::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid #FF5500;
+  border-right: 1px solid #FF5500;
+}
+
+/* Status beacon animation */
+@keyframes beacon-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-beacon {
+  animation: beacon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes laser-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes glow-drift {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1) translate(0px, 0px);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.08) translate(15px, -10px);
+  }
+}
+
+.animate-laser-sweep {
+  animation: laser-sweep 4s ease-in-out infinite;
+}
+
+.animate-glow-drift {
+  animation: glow-drift 8s ease-in-out infinite;
+}
+
+.cyber-glow-orange {
+  box-shadow: 0 0 35px rgba(255, 85, 0, 0.4), inset 0 0 15px rgba(255, 85, 0, 0.15);
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.35), inset 0 0 15px rgba(0, 240, 255, 0.15);
+}
+
+.cyber-text-glow-orange {
+  text-shadow: 0 0 20px rgba(255, 85, 0, 0.8), 0 0 40px rgba(255, 85, 0, 0.4);
+}
+
+.cyber-text-glow-cyan {
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.8), 0 0 40px rgba(0, 240, 255, 0.4);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

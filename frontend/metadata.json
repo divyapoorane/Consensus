@@ -1,0 +1,7 @@
+{
+  "name": "Consensus | Hackathon Platform",
+  "description": "The premier hackathon ecosystem where organizers launch, judges evaluate, and global participants build together.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

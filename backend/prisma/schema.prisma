@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  password        String
+  name            String
+  role            String            @default("participant") // "participant", "organizer", "judge", "admin"
+  avatarUrl       String?
+  bio             String?
+  headline        String?
+  college         String?
+  course          String?
+  graduationYear  String?
+  currentRole     String?
+  skills          String[]          @default([])
+  interests       String[]          @default([])
+  github          String?
+  linkedin        String?
+  portfolio       String?
+  country         String?
+  state           String?
+  city            String?
+  title           String?           // For organizers / judges
+  organization    String?           // For judges
+  status          String            @default("active") // "active", "suspended"
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  hackathons      Hackathon[]       @relation("OrganizerHackathons")
+  registrations   Registration[]
+  teamsLed        Team[]            @relation("TeamLeader")
+  teamMembers     TeamMember[]
+  projects        Project[]
+  submissions     Submission[]
+  assignments     JudgeAssignment[]
+  evaluations     Evaluation[]
+}
+
+model Hackathon {
+  id                      String            @id @default(uuid())
+  title                   String
+  tagline                 String
+  description             String            @db.Text
+  category                String
+  bannerUrl               String
+  logoUrl                 String?
+  status                  String            @default("active") // "draft", "published", "active", "completed"
+  registrationStart       String
+  registrationEnd         String
+  hackathonStart          String
+  hackathonEnd            String
+  submissionDeadline      String
+  judgingPeriod           String?
+  resultsDate             String?
+  format                  String            @default("team") // "individual", "team", "both"
+  minTeamSize             Int               @default(1)
+  maxTeamSize             Int               @default(4)
+  eligibility             String?
+  geographicRestrictions  String?
+  requirements            String[]          @default([])
+  totalPrizePool          String            @default("$50,000")
+  prizeTiers              Json?
+  rubric                  Json?
+  organizerId             String
+  organizer               User              @relation("OrganizerHackathons", fields: [organizerId], references: [id])
+  organizerName           String?
+  organizerEmail          String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  registrations           Registration[]
+  teams                   Team[]
+  projects                Project[]
+  submissions             Submission[]
+  judgeAssignments        JudgeAssignment[]
+  payouts                 Payout[]
+  certificates            Certificate[]
+}
+
+model Registration {
+  id          String    @id @default(uuid())
+  hackathonId String
+  userId      String
+  status      String    @default("confirmed") // "confirmed", "pending", "waitlisted"
+  createdAt   DateTime  @default(now())
+
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([hackathonId, userId])
+}
+
+model Team {
+  id             String       @id @default(uuid())
+  name           String
+  hackathonId    String
+  leaderId       String
+  inviteCode     String       @unique
+  maxMembers     Int          @default(4)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  hackathon      Hackathon    @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  leader         User         @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members        TeamMember[]
+  projects       Project[]
+  submissions    Submission[]
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  role      String   @default("Member") // "Team Lead", "Member", etc.
+  joinedAt  DateTime @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Project {
+  id               String            @id @default(uuid())
+  hackathonId      String
+  teamId           String?
+  creatorId        String
+  title            String
+  tagline          String
+  description      String            @db.Text
+  techStack        String[]          @default([])
+  repositoryUrl    String
+  demoUrl          String
+  documentationUrl String?
+  videoUrl         String?
+  thumbnailUrl     String?
+  status           String            @default("Ready for Submission") // "In Progress", "Ready for Submission", "Submitted"
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  hackathon        Hackathon         @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  team             Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  creator          User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  submission       Submission?
+  judgeAssignments JudgeAssignment[]
+  evaluations      Evaluation[]
+}
+
+model Submission {
+  id               String       @id @default(uuid())
+  projectId        String       @unique
+  hackathonId      String
+  teamId           String?
+  submitterId      String
+  status           String       @default("submitted") // "submitted", "under_review", "evaluated", "shortlisted", "won"
+  validationStatus String       @default("Passed") // "Passed", "Checks In Progress", "Needs Attention"
+  judgingStatus    String       @default("Pending Review") // "Pending Review", "In Deliberation", "Scoring Completed"
+  score            Float?
+  maxScore         Float        @default(100)
+  feedback         String?      @db.Text
+  submittedAt      DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  project          Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  hackathon        Hackathon    @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  team             Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  submitter        User         @relation(fields: [submitterId], references: [id], onDelete: Cascade)
+  evaluations      Evaluation[]
+}
+
+model JudgeAssignment {
+  id          String    @id @default(uuid())
+  judgeId     String
+  hackathonId String
+  projectId   String?
+  status      String    @default("pending") // "pending", "in_progress", "completed"
+  assignedAt  DateTime  @default(now())
+
+  judge       User      @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([judgeId, hackathonId, projectId])
+}
+
+model Evaluation {
+  id                String      @id @default(uuid())
+  judgeId           String
+  projectId         String
+  submissionId      String?
+  innovation        Int         @default(0) // 0-20
+  technicalQuality  Int         @default(0) // 0-30
+  uiUx              Int         @default(0) // 0-15
+  impact            Int         @default(0) // 0-20
+  presentation      Int         @default(0) // 0-15
+  totalScore        Int         @default(0) // 0-100
+  feedback          String      @db.Text
+  privateNotes      String?     @db.Text
+  recommendForAward Boolean     @default(false)
+  evaluatedAt       DateTime    @default(now())
+
+  judge             User        @relation(fields: [judgeId], references: [id], onDelete: Cascade)
+  project           Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  submission        Submission? @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@unique([judgeId, projectId])
+}
+
+model Payout {
+  id             String    @id @default(uuid())
+  payoutId       String    @unique // e.g. "DEMO-TXN-001"
+  hackathonId    String
+  hackathonTitle String
+  teamId         String?
+  winnerTeam     String
+  recipientEmail String
+  prizeTitle     String
+  amount         String    // e.g. "$25,000"
+  status         String    @default("pending") // "pending", "processing", "completed", "failed", "held_for_review"
+  payoutMethod   String    @default("Direct Escrow Settlement (Simulated)")
+  isDemo         Boolean   @default(true)
+  initiatedAt    DateTime  @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  hackathon      Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id             String   @id @default(uuid())
+  certificateId  String   @unique // e.g. "CERT-CNS-2026-904"
+  recipientName  String
+  recipientEmail String
+  type           String   @default("participant") // "participant", "winner", "judge"
+  hackathonId    String
+  hackathonTitle String
+  achievement    String   @default("Track Finalist & Verified Consensus Contributor")
+  issuedAt       DateTime @default(now())
+  status         String   @default("issued") // "issued", "draft"
+  createdAt      DateTime @default(now())
+
+  hackathon      Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+}
+
+model Dispute {
+  id               String   @id @default(uuid())
+  disputeId        String   @unique // e.g. "DSP-4091"
+  complainantName  String
+  complainantEmail String
+  complainantRole  String   @default("participant")
+  hackathonId      String?
+  hackathonTitle   String
+  projectId        String?
+  projectTitle     String?
+  category         String   // "Plagiarism / Code Theft", "Judging Bias", "Prize Dispute", "Conduct Violation", "Other"
+  priority         String   @default("medium") // "low", "medium", "high", "critical"
+  status           String   @default("OPEN") // "OPEN", "UNDER_REVIEW", "RESOLVED", "REJECTED"
+  description      String   @db.Text
+  resolutionNotes  String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  timestamp  DateTime @default(now())
+  userEmail  String
+  userRole   String
+  action     String
+  resource   String
+  entityType String?
+  entityId   String?
+  status     String   @default("SUCCESS")
+  ipAddress  String   @default("127.0.0.1")
+  metadata   String?
+  createdAt  DateTime @default(now())
+}
